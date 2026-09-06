@@ -9,7 +9,7 @@ const HELP = `trumf-connector — CLI and MCP server for Trumf purchase history
 Usage:
   trumf-connector mcp                        Start the MCP server (stdio)
 
-  trumf-connector auth set-token             Paste Authorization header, then Ctrl-D
+  trumf-connector auth set-token [token]     Paste token + Enter (or pass as arg)
   trumf-connector auth status
   trumf-connector auth logout                Delete the stored token
 
@@ -26,10 +26,12 @@ function flag(args: string[], name: string): string | undefined {
   return i >= 0 ? args[i + 1] : undefined;
 }
 
-async function readStdin(): Promise<string> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
-  return Buffer.concat(chunks).toString("utf8").trim();
+async function readLine(prompt: string): Promise<string> {
+  const { createInterface } = await import("node:readline/promises");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await rl.question(prompt);
+  rl.close();
+  return answer.trim();
 }
 
 function print(value: unknown): void {
@@ -46,8 +48,9 @@ async function main(): Promise<void> {
       return;
 
     case "auth set-token": {
-      const token = await readStdin();
-      if (!token) throw new Error("Paste the Authorization header on stdin (end with Ctrl-D)");
+      // Token som argument, ellers interaktivt: én linje + Enter (ingen Ctrl-D).
+      const token = rest[0] ?? (await readLine("Lim inn Authorization-token og trykk Enter:\n> "));
+      if (!token) throw new Error("Empty token");
       await client.setToken(token);
       print({ status: "token saved" });
       return;
