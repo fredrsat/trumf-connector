@@ -132,3 +132,12 @@ describe("compactTransaction / compactReceipt", () => {
     expect(compact.lines[0].savings[0]).toMatchObject({ description: "Tilbud", amount: 5 });
   });
 });
+
+describe("normalizedKey (ean-resolver)", () => {
+  it("er kjede-uavhengig: samme ord i annen rekkefølge gir samme nøkkel", async () => {
+    const { normalizedKey } = await import("../src/ean-resolver.js");
+    expect(normalizedKey("MAARUD TORTILLA CHEESE 175G")).toBe(normalizedKey("Tortilla Cheese Maarud"));
+    expect(normalizedKey("LAKRISKONFEKT 225G R")).toBe(normalizedKey("Lakriskonfekt 225g R"));
+    expect(normalizedKey("")).toBe("");
+  });
+});

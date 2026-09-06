@@ -17,6 +17,10 @@ Usage:
   trumf-connector receipt <batchid>
   trumf-connector observations [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--max N] [--all] [--ean]
 
+  trumf-connector ean-cache status             Cache size and location
+  trumf-connector ean-cache seed-rema [--max N]  Seed name→EAN from Rema receipts
+                                               (needs rema1000-cli, logged in)
+
 Cookies: log in at https://www.trumf.no, open devtools → Network, click any
 request to www.trumf.no, and copy the full 'Cookie' request header. The
 '__Secure-authjs.session-token' cookies are the ones that matter (valid ~1 year).
@@ -62,6 +66,16 @@ async function main(): Promise<void> {
       await client.clearCookies();
       print({ status: "cookies deleted" });
       return;
+
+    case "ean-cache status":
+      print(await client.resolver.stats());
+      return;
+    case "ean-cache seed-rema": {
+      const { seedFromRema } = await import("./rema-seed.js");
+      const max = flag(rest, "--max") ? Number(flag(rest, "--max")) : undefined;
+      print(await seedFromRema(client.resolver, max));
+      return;
+    }
 
     case "purchases undefined":
       print(await client.getPurchases(flag(rest, "--from"), flag(rest, "--to")));

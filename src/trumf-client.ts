@@ -93,7 +93,13 @@ export class TrumfClient {
       cookies_configured: configured,
       cookie_file: COOKIE_FILE,
       ean_lookup_available: await this.eanResolver.available(),
+      ean_cache: await this.eanResolver.stats(),
     };
+  }
+
+  /** EAN-resolveren, for cache-kommandoene i CLI-et. */
+  get resolver(): EanResolver {
+    return this.eanResolver;
   }
 
   private async fetchPage(path: string): Promise<string> {
@@ -165,7 +171,7 @@ export class TrumfClient {
     let result = options.latestOnly === false ? observations : latestPerProduct(observations);
 
     let eanResolved: number | undefined;
-    if (options.resolveEan && (await this.eanResolver.available())) {
+    if (options.resolveEan) {
       eanResolved = 0;
       for (const obs of result) {
         if (obs.ean) continue;
@@ -177,6 +183,7 @@ export class TrumfClient {
           eanResolved++;
         }
       }
+      await this.eanResolver.flush();
     }
 
     return {

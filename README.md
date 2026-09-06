@@ -48,6 +48,20 @@ Den finner API-nøkkelen fra (i rekkefølge): miljøvariabelen
 `KASSALAPP_API_KEY`, `.env` i dette prosjektet, eller
 `~/.kassalapp-connector/config.json`. Uten nøkkel hoppes oppslaget over.
 
+Oppslagene caches persistent i `~/.trumf-connector/ean-cache.json` (også
+bomskudd, som prøves på nytt etter 30 dager) — siden man stort sett kjøper de
+samme varene, går antall API-kall raskt mot null. Cachen kan i tillegg seedes
+fra Rema-kvitteringer, som har både navn og EAN på hver linje (krever
+[rema1000-cli](https://github.com/Alfredvc/rema1000-cli) innlogget):
+
+```sh
+trumf-connector ean-cache seed-rema --max 50
+trumf-connector ean-cache status
+```
+
+Navnematchingen på tvers av kjeder er beste-forsøk (normaliserte, sorterte
+ord), siden kjedene skriver produktnavn litt ulikt.
+
 ## Oppsett
 
 ```sh
