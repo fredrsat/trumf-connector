@@ -1,0 +1,31 @@
+{
+  "name": "trumf-connector",
+  "version": "0.1.0",
+  "description": "MCP server and CLI for Trumf (NorgesGruppen) purchase history — real observed prices from Kiwi, Meny, Spar and Joker receipts (personal use)",
+  "type": "module",
+  "bin": {
+    "trumf-connector": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

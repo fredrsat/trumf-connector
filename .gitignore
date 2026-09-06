@@ -1,0 +1,9 @@
+# Hemmeligheter må aldri committes
+.env
+.env.*
+
+node_modules/
+dist/
+*.log
+*.bak
+.DS_Store

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "trumf": {
+      "command": "node",
+      "args": ["/Users/fredrsat/Code/trumf-connector/dist/index.js", "mcp"]
+    }
+  }
+}
