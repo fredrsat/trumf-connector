@@ -7,18 +7,19 @@ import { runMcpServer } from "./server.js";
 const HELP = `trumf-connector — CLI and MCP server for Trumf purchase history
 
 Usage:
-  trumf-connector mcp                        Start the MCP server (stdio)
+  trumf-connector mcp                          Start the MCP server (stdio)
 
-  trumf-connector auth set-token [token]     Paste token + Enter (or pass as arg)
+  trumf-connector auth set-cookies [cookie]    Paste Cookie header + Enter (or pass as arg)
   trumf-connector auth status
-  trumf-connector auth logout                Delete the stored token
+  trumf-connector auth logout                  Delete the stored cookies
 
   trumf-connector purchases [--from YYYY-MM-DD] [--to YYYY-MM-DD]
   trumf-connector receipt <batchid>
-  trumf-connector observations [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--max N] [--all]
+  trumf-connector observations [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--max N] [--all] [--ean]
 
-Token: log in at https://www.trumf.no, open devtools → Network, copy the
-Authorization header from any request to platform-rest-prod.ngdata.no.
+Cookies: log in at https://www.trumf.no, open devtools → Network, click any
+request to www.trumf.no, and copy the full 'Cookie' request header. The
+'__Secure-authjs.session-token' cookies are the ones that matter (valid ~1 year).
 `;
 
 function flag(args: string[], name: string): string | undefined {
@@ -47,24 +48,23 @@ async function main(): Promise<void> {
       await runMcpServer();
       return;
 
-    case "auth set-token": {
-      // Token som argument, ellers interaktivt: én linje + Enter (ingen Ctrl-D).
-      const token = rest[0] ?? (await readLine("Lim inn Authorization-token og trykk Enter:\n> "));
-      if (!token) throw new Error("Empty token");
-      await client.setToken(token);
-      print({ status: "token saved" });
+    case "auth set-cookies": {
+      const cookies = rest[0] ?? (await readLine("Lim inn Cookie-headeren og trykk Enter:\n> "));
+      if (!cookies) throw new Error("Empty cookie header");
+      await client.setCookies(cookies);
+      print({ status: "cookies saved" });
       return;
     }
     case "auth status":
       print(await client.getSettings());
       return;
     case "auth logout":
-      await client.clearToken();
-      print({ status: "token deleted" });
+      await client.clearCookies();
+      print({ status: "cookies deleted" });
       return;
 
     case "purchases undefined":
-      print(await client.getTransactions(flag(rest, "--from"), flag(rest, "--to")));
+      print(await client.getPurchases(flag(rest, "--from"), flag(rest, "--to")));
       return;
 
     case "observations undefined":
@@ -74,13 +74,15 @@ async function main(): Promise<void> {
           til: flag(rest, "--to"),
           maxReceipts: flag(rest, "--max") ? Number(flag(rest, "--max")) : undefined,
           latestOnly: rest.includes("--all") ? false : undefined,
+          resolveEan: rest.includes("--ean"),
         }),
       );
       return;
 
     default:
       if (cmd === "purchases") {
-        print(await client.getTransactions(flag([sub!, ...rest], "--from"), flag([sub!, ...rest], "--to")));
+        const args = [sub!, ...rest].filter(Boolean);
+        print(await client.getPurchases(flag(args, "--from"), flag(args, "--to")));
         return;
       }
       if (cmd === "observations") {
@@ -91,12 +93,13 @@ async function main(): Promise<void> {
             til: flag(args, "--to"),
             maxReceipts: flag(args, "--max") ? Number(flag(args, "--max")) : undefined,
             latestOnly: args.includes("--all") ? false : undefined,
+            resolveEan: args.includes("--ean"),
           }),
         );
         return;
       }
       if (cmd === "receipt" && sub) {
-        print(await client.getReceipt(sub));
+        print(await client.getReceiptCompact(sub));
         return;
       }
       console.log(HELP);

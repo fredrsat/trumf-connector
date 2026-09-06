@@ -1,6 +1,6 @@
 {
   "name": "trumf-connector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server and CLI for Trumf (NorgesGruppen) purchase history — real observed prices from Kiwi, Meny, Spar and Joker receipts (personal use)",
   "type": "module",
   "bin": {
