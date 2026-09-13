@@ -1,0 +1,29 @@
+# trumf-connector
+
+> MCP-server og CLI som henter Trumf-kjøpshistorikk (Kiwi, Meny, Spar, Joker) og gjør kvitteringene om til observerte priser per produkt og butikk — kun for personlig bruk mot egen konto.
+
+Trumfs gamle REST-API er lagt ned; connectoren scraper i stedet de innloggede sidene på www.trumf.no med session-cookies som brukeren limer inn (`trumf-connector auth set-cookies`, lagres i `~/.trumf-connector/cookies`). Kvitteringene mangler EAN/strekkode — den kan slås opp beste-forsøk via kassal.app-søk på produktnavn (`resolve_ean`), med persistent cache i `~/.trumf-connector/ean-cache.json` som også kan seedes fra Rema-kvitteringer via rema1000-cli.
+
+Stack: TypeScript (ESM), Node >= 18, `@modelcontextprotocol/sdk`, zod, vitest. Fire MCP-verktøy: `get_purchases`, `get_receipt`, `get_price_observations`, `get_connector_settings`. Trumf beholder kun siste 12 måneders kjøp. Designet for å brukes sammen med kassalapp-connector og rema-connector i en handleagent.
+
+## Docs
+
+- [README](https://github.com/fredrsat/trumf-connector/blob/main/README.md): full dokumentasjon — autentisering, EAN-oppslag, oppsett, MCP-verktøy og CLI
+- [LICENSE](https://github.com/fredrsat/trumf-connector/blob/main/LICENSE): MIT
+
+## Source
+
+- [src/index.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/index.ts): CLI-inngangspunkt (purchases, receipt, observations, auth, ean-cache, mcp)
+- [src/server.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/server.ts): MCP-serveren og verktøydefinisjonene
+- [src/trumf-scrape.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/trumf-scrape.ts): scraping/parsing av innloggede trumf.no-sider
+- [src/trumf-client.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/trumf-client.ts): klient med cookie-autentisering
+- [src/ean-resolver.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/ean-resolver.ts): EAN-oppslag via kassal.app med persistent cache
+- [src/rema-seed.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/rema-seed.ts): seeding av EAN-cache fra Rema-kvitteringer
+- [src/format.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/format.ts): formatering av kjøp/kvitteringer/prisobservasjoner
+- [src/types.ts](https://github.com/fredrsat/trumf-connector/blob/main/src/types.ts): delte typer
+
+## Optional
+
+- [tests/trumf-scrape.test.ts](https://github.com/fredrsat/trumf-connector/blob/main/tests/trumf-scrape.test.ts): tester for side-parsing
+- [tests/format.test.ts](https://github.com/fredrsat/trumf-connector/blob/main/tests/format.test.ts): tester for formatering
+- [package.json](https://github.com/fredrsat/trumf-connector/blob/main/package.json): scripts og avhengigheter
